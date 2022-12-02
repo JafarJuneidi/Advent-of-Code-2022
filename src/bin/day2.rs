@@ -1,111 +1,92 @@
+use anyhow::Result;
 use std::str::FromStr;
 
-#[derive(Debug)]
-enum Sign {
-    Rock,
-    Paper,
-    Scissors,
+struct HandPair1 {
+    value: usize,
 }
 
-#[derive(Debug)]
-enum SignConversionErr {
-    WrongInput,
+struct HandPair2 {
+    value: usize,
 }
 
-impl FromStr for Sign {
-    type Err = SignConversionErr;
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        match s {
-            "A" | "X" => Ok(Sign::Rock),
-            "B" | "Y" => Ok(Sign::Paper),
-            "C" | "Z" => Ok(Sign::Scissors),
-            _ => Err(SignConversionErr::WrongInput),
-        }
+const WIN_LOSE: [usize; 3] = [3, 6, 0];
+const CHOICE_VALUE: [usize; 3] = [3, 1, 2];
+// A                              X  Y  Z
+// B                              Z  X  Y
+// C                              Y  Z  X
+
+impl FromStr for HandPair1 {
+    type Err = anyhow::Error;
+
+    fn from_str(s: &str) -> Result<Self> {
+        let (o, p) = match s.split_once(" ") {
+            Some((o, p)) => (o, p),
+            None => return Err(anyhow::anyhow!("invalid input")),
+        };
+
+        let o = to_number_1(o);
+        let p = to_number_1(p);
+        let score = p + WIN_LOSE[(2 + o + p) % WIN_LOSE.len()];
+
+        return Ok(HandPair1 { value: score });
     }
 }
 
-impl Sign {
-    fn result(self: &Self, opponent: &Self) -> u16 {
-        match self {
-            Sign::Rock => match opponent {
-                Sign::Rock => 3 + 1,
-                Sign::Paper => 0 + 1,
-                Sign::Scissors => 6 + 1,
-            },
-            Sign::Paper => match opponent {
-                Sign::Rock => 6 + 2,
-                Sign::Paper => 3 + 2,
-                Sign::Scissors => 0 + 2,
-            },
-            Sign::Scissors => match opponent {
-                Sign::Rock => 0 + 3,
-                Sign::Paper => 6 + 3,
-                Sign::Scissors => 3 + 3,
-            },
-        }
+impl FromStr for HandPair2 {
+    type Err = anyhow::Error;
+
+    fn from_str(s: &str) -> Result<Self> {
+        let (o, p) = match s.split_once(" ") {
+            Some((o, p)) => (o, p),
+            None => return Err(anyhow::anyhow!("invalid input")),
+        };
+
+        let o = to_number_2(o);
+        let p = to_number_2(p);
+        let score = p * 3 + CHOICE_VALUE[(o + p) % CHOICE_VALUE.len()];
+
+        return Ok(HandPair2 { value: score });
     }
 }
 
-enum Outcome {
-    Win,
-    Draw,
-    Loss,
+fn to_number_1(c: &str) -> usize {
+    return match c {
+        "A" => 0,
+        "B" => 2,
+        "C" => 1,
+        "X" => 1,
+        "Y" => 2,
+        "Z" => 3,
+        _ => unreachable!("try to get here, lol"),
+    };
 }
 
-#[derive(Debug)]
-enum OutcomeConversionErr {
-    WrongInput,
+fn to_number_2(c: &str) -> usize {
+    return match c {
+        "A" => 0,
+        "B" => 1,
+        "C" => 2,
+        "X" => 0,
+        "Y" => 1,
+        "Z" => 2,
+        _ => unreachable!("try to get here, lol"),
+    };
 }
 
-impl FromStr for Outcome {
-    type Err = OutcomeConversionErr;
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        match s {
-            "X" => Ok(Outcome::Loss),
-            "Y" => Ok(Outcome::Draw),
-            "Z" => Ok(Outcome::Win),
-            _ => Err(OutcomeConversionErr::WrongInput),
-        }
-    }
-}
-
-impl Outcome {
-    fn result(self: &Self, opponent: &Sign) -> u16 {
-        match self {
-            Outcome::Win => match opponent {
-                Sign::Rock => 6 + 2,
-                Sign::Paper => 6 + 3,
-                Sign::Scissors => 6 + 1,
-            },
-            Outcome::Draw => match opponent {
-                Sign::Rock => 3 + 1,
-                Sign::Paper => 3 + 2,
-                Sign::Scissors => 3 + 3,
-            },
-            Outcome::Loss => match opponent {
-                Sign::Rock => 0 + 3,
-                Sign::Paper => 0 + 1,
-                Sign::Scissors => 0 + 2,
-            },
-        }
-    }
-}
-
-fn str_to_sign_outcome(str: &str) -> (Sign, Outcome) {
-    let str: Vec<&str> = str.split(" ").collect();
-    (str[0].parse().unwrap(), str[1].parse().unwrap())
-}
-
-fn main() {
-    let output: u16 = include_str!("./day2.txt")
+fn main() -> Result<()> {
+    let values_1: usize = include_str!("./day2.txt")
         .lines()
-        .map(|round| {
-            // let vector: Vec<Sign> = round.split(" ").flat_map(str::parse::<Sign>).collect();
-            // vector[1].result(&vector[0])
-            let tuple = str_to_sign_outcome(round);
-            tuple.1.result(&tuple.0)
-        })
+        .flat_map(|x| x.parse::<HandPair1>())
+        .map(|x| x.value)
         .sum();
 
-    println!("{:?}", output);
+    let values_2: usize = include_str!("./day2.txt")
+        .lines()
+        .flat_map(|x| x.parse::<HandPair2>())
+        .map(|x| x.value)
+        .sum();
+
+    println!("part1 is :{:?}", values_1);
+    println!("part1 is :{:?}", values_2);
+    Ok(())
 }
