@@ -5,10 +5,15 @@ fn sliding_window(input: &str, win_size: usize) -> usize {
         .as_bytes()
         .windows(win_size)
         .position(|window| {
-            !window
-                .iter()
-                .enumerate()
-                .any(|(index, num)| window[..index].contains(num))
+            let mut data: u32 = 0;
+            for &c in window {
+                let prev = data;
+                data |= 1 << (c - b'a');
+                if prev == data {
+                    return false;
+                }
+            }
+            return true;
         })
         .unwrap()
         + win_size
