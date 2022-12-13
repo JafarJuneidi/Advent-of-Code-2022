@@ -34,7 +34,7 @@ fn main() -> Result<()> {
         }
     });
 
-    println!("Sigal: {}, X: {}, Cycle: {}", signal, x, cycle);
+    println!("Signal: {}, X: {}, Cycle: {}", signal, x, cycle);
 
     for i in 0..6 {
         println!("{}", &crt[i * 40..(i + 1) * 40]);
