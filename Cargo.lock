@@ -25,6 +25,7 @@ dependencies = [
  "glam",
  "nom",
  "pathfinding",
+ "petgraph",
  "rayon",
  "sscanf",
 ]
@@ -240,6 +241,16 @@ dependencies = [
  "num-traits",
  "rustc-hash",
  "thiserror",
+]
+
+[[package]]
+name = "petgraph"
+version = "0.6.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e6d5014253a1331579ce62aa67443b4a658c5e7dd03d4bc6d302b94474888143"
+dependencies = [
+ "fixedbitset",
+ "indexmap",
 ]
 
 [[package]]
